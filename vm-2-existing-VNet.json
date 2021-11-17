@@ -1,158 +1,136 @@
-{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "Deployment location"
-      }
-    },
-    "windowsOSVersion": {
-      "type": "string",
-      "defaultValue": "2016-Datacenter",
-      "allowedValues": [
-        "2008-R2-SP1",
-        "2012-Datacenter",
-        "2012-R2-Datacenter",
-        "2016-Nano-Server",
-        "2016-Datacenter-with-Containers",
-        "2016-Datacenter",
-        "2019-Datacenter"
-      ],
-      "metadata": {
-        "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
-      }
-    },
     "vmName": {
       "type": "string",
+      "defaultValue": "btuseries",
       "metadata": {
-        "title": "VM Name",
-        "description": "This is the name of the your VM"
+        "description": "Name of the VM"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS4_v2",
+      "metadata": {
+        "description": "Size of the VM"
       }
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "VMAdmin",
       "metadata": {
-        "description": "Username for the Virtual Machine."
+        "description": "VM Admin User Name"
       }
     },
     "adminPassword": {
-      "type": "securestring",
+      "type": "string",
       "metadata": {
-        "description": "Password for the Virtual Machine."
+        "description": "VM Admin Password"
+      }
+    },
+    "vNetNewOrExisting": {
+      "type": "string",
+      "defaultValue": "existing",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Specify whether to create a new or existing virtual network for the VM."
       }
     },
     "virtualNetworkName": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
-        "description": "New or Existing VNet Name"
-      }
-    },
-    "virtualNetworkNewOrExisting": {
-      "type": "string",
-      "defaultValue": "existing",
-      "metadata": {
-        "description": "Boolean indicating whether the VNet is new or existing"
-      }
-    },
-    "virtualNetworkAddressPrefix": {
-      "type": "string",
-      "metadata": {
-        "description": "VNet address prefix"
+        "description": "Name of the new/existing VNET"
       }
     },
     "virtualNetworkResourceGroup": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
-        "description": "Resource group of the VNet"
-      }
-    },
-    "virtualMachineSize": {
-      "type": "string",
-         "defaultValue": "existing",
-      "metadata": {
-        "description": "The size of the VM"
+        "description": "Name of the new/existing VNET resource group"
       }
     },
     "subnetName": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
-        "description": "New or Existing subnet Name"
+        "description": "Name of the subnet in the virtual network you want to use"
       }
     },
-    "subnetAddressPrefix": {
-      "type": "string",
-      "metadata": {
-        "description": "Subnet address prefix"
-      }
-    },
-    "baseUrl": {
+    "dnsNameForPublicIP": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "artifactsBaseUrl": "",
-        "description": "URL to acquire other templates"
+        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "nsgName": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Network Security Group"
+      }
+    },
+    "osDiskType": {
+      "type": "string",
+      "defaultValue": "Premium_LRS",
+      "metadata": {
+        "description": "OS Disk Type"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Location for all resources."
       }
     }
   },
   "variables": {
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-        "vmName": "[parameters('vmName')]",
-    "nicName": "[concat(parameters('vmName'),'Nic')]",
-    "vnetId": {
-      "new": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
-      "existing": "[resourceId(parameters('virtualNetworkResourceGroup'),'Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]"
-    },
-    "subnetId": "[concat(variables('vnetId')[parameters('virtualNetworkNewOrExisting')],'/subnets/',parameters('subnetName'))]"
-    },
+    "diagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'specvm')]",
+    "subnetRef": "[resourceId(parameters('virtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'),  parameters('subnetName'))]",
+    "nicName": "nic",
+    "publicIPAddressName": "publicIp"
+  },
   "resources": [
+      {
+          "condition": "[equals(parameters('vNetNewOrExisting'), 'new')]",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "apiVersion": "2020-11-01",
+          "name": "[parameters('nsgName')]",
+          "location": "eastus",
+          "properties": {
+              "securityRules": []
+          }
+      },
     {
-      "condition": "[equals(parameters('virtualNetworkNewOrExisting'),'new')]",
+      "condition": "[equals(parameters('vNetNewOrExisting'), 'new')]",
+      "apiVersion": "2018-10-01",
       "type": "Microsoft.Network/virtualNetworks",
-      "apiVersion": "2021-02-01",
       "name": "[parameters('virtualNetworkName')]",
       "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[parameters('virtualNetworkAddressPrefix')]"
+            "10.0.0.0/16"
           ]
         },
         "subnets": [
           {
             "name": "[parameters('subnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetAddressPrefix')]"
+              "addressPrefix": "10.0.0.0/24"
             }
           }
         ]
       }
     },
-       {
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
-      "apiVersion": "2021-02-01",
-      "location": "[parameters('location')]",
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-                           "subnet": {
-                "id": "[variables('subnetId')]"
-              }
-            }
-          }
-        ],
-        "enableIPForwarding": true
-      },
-          {
+{
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2021-04-01",
-      "name": "[variables('storageAccountName')]",
+      "name": "[variables('diagStorageAccountName')]",
+      "apiVersion": "2018-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -161,55 +139,110 @@
       "properties": {}
     },
     {
-      "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2021-04-01",
-      "name": "[variables('vmName')]",
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIPAddressName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "PublicIPAddress"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[variables('publicIPAddressName')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
       ],
+      "tags": {
+        "displayName": "NetworkInterface"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "VirtualMachine"
+      },
+      "dependsOn": [
+        "[variables('nicName')]"
+      ],
+      "plan": {
+        "name": "u-series",
+        "publisher": "beyondtrust",
+        "product": "beyondinsight"
+      },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('virtualMachineSize')]"
-        },
-        "osProfile": {
-          "computerName": "[variables('vmName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "vmSize": "[parameters('vmSize')]"
         },
         "storageProfile": {
-          "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "[parameters('windowsOSVersion')]",
-            "version": "latest"
-          },
           "osDisk": {
-            "createOption": "FromImage"
-          },
-          "dataDisks": [
-            {
-              "diskSizeGB": 1023,
-              "lun": 0,
-              "createOption": "Empty"
+                "createOption": "FromImage",
+                "managedDisk": {
+                    "storageAccountType": "[parameters('osDiskType')]"
+                }
+            },
+            "imageReference": {
+                "publisher": "beyondtrust",
+                "offer": "beyondinsight",
+                "sku": "u-series",
+                "version": "latest"
             }
-          ]
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
             }
           ]
+        },
+        "osProfile": {
+            "computerName": "[parameters('vmName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]",
+            "windowsConfiguration": {
+                "enableAutomaticUpdates": true,
+                "provisionVmAgent": true
+            }
         },
         "diagnosticsProfile": {
           "bootDiagnostics": {
             "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
+            "storageUri": "[reference(variables('diagStorageAccountName')).primaryEndpoints.blob]"
           }
         }
       }
     }
   ]
 }
+
