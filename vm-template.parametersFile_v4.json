@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "networkInterfaceName": {
+      "value": "them0001471"
+    },
+    "networkSecurityGroupName": {
+      "value": "TheM0001-nsg"
+    },
+    "networkSecurityGroupRules": {
+      "value": []
+    },
+    "subnetName": {
+      "value": "default"
+    },
+    "virtualNetworkName": {
+      "value": "DevOps-as-Code-vnet"
+    },
+    "addressPrefixes": {
+      "value": [
+        "10.0.0.0/16"
+      ]
+    },
+    "subnets": {
+      "value": [
+        {
+          "name": "default",
+          "properties": {
+            "addressPrefix": "10.0.0.0/24"
+          }
+        }
+      ]
+    },
+    "publicIpAddressName": {
+      "value": "TheM0001-ip"
+    },
+    "publicIpAddressType": {
+      "value": "Dynamic"
+    },
+    "publicIpAddressSku": {
+      "value": "Basic"
+    },
+    "virtualMachineName": {
+      "value": "TheM0001"
+    },
+    "virtualMachineComputerName": {
+      "value": "TheM0001"
+    },
+    "virtualMachineRG": {
+      "value": "DevOps-as-Code"
+    },
+    "osDiskType": {
+      "value": "Premium_LRS"
+    },
+    "virtualMachineSize": {
+      "value": "Standard_B2ms"
+    },
+    "adminUsername": {
+      "value": "vmADM"
+    },
+    "adminPassword": {
+      "value": "VM M0r3 S3cur3 Pa$$w0rd 2021"
+    },
+    "patchMode": {
+      "value": "AutomaticByOS"
+    },
+    "enableHotpatching": {
+      "value": false
+    },
+    "autoShutdownStatus": {
+      "value": "Enabled"
+    },
+    "autoShutdownTime": {
+      "value": "19:00"
+    },
+    "autoShutdownTimeZone": {
+      "value": "UTC"
+    },
+    "autoShutdownNotificationStatus": {
+      "value": "Enabled"
+    },
+    "autoShutdownNotificationLocale": {
+      "value": "en"
+    },
+    "autoShutdownNotificationEmail": {
+      "value": "ocag213@outlook.com"
+    }
+  }
+}
