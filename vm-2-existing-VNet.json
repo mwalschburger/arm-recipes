@@ -99,16 +99,14 @@
   },
   "variables": {
     "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-    "publicIPAddressName": "[concat(uniqueString(resourceGroup().id),'IP')]",
-    "vmName": "[parameters('vmName')]",
+        "vmName": "[parameters('vmName')]",
     "nicName": "[concat(parameters('vmName'),'Nic')]",
     "vnetId": {
       "new": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
       "existing": "[resourceId(parameters('virtualNetworkResourceGroup'),'Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]"
     },
-    "subnetId": "[concat(variables('vnetId')[parameters('virtualNetworkNewOrExisting')],'/subnets/',parameters('subnetName'))]",
-    "publicIPAddressType": "Dynamic"
-  },
+    "subnetId": "[concat(variables('vnetId')[parameters('virtualNetworkNewOrExisting')],'/subnets/',parameters('subnetName'))]"
+    },
   "resources": [
     {
       "condition": "[equals(parameters('virtualNetworkNewOrExisting'),'new')]",
@@ -143,10 +141,7 @@
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
-              },
-              "subnet": {
+                           "subnet": {
                 "id": "[variables('subnetId')]"
               }
             }
@@ -154,12 +149,7 @@
         ],
         "enableIPForwarding": true
       },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
-      ]
-    },
-    {
+          {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2021-04-01",
       "name": "[variables('storageAccountName')]",
