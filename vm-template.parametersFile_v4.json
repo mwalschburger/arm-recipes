@@ -3,7 +3,52 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "value": "eastus"
+      "defaultValue": "eastus",
+       "allowedValues": [
+                "eastus",
+                "westus"
+            ],
+      "metadata": {
+                "description": "locations to deploy VM"
+            }
+      },
+    "vmSizes": {
+            "type": "string",
+            "defaultValue": "Standard_B2ms",
+            "allowedValues": [
+                "Standard_D2s_v3",
+                "Standard_D2_v3",
+                "Standard_B2ms"
+            ],
+            "metadata": {
+                    "description": "The type of replication to use for the VM size."
+            }
+        },
+      "OSVersion": {
+            "type": "string",
+            "defaultValue": "2022-datacenter-azure-edition",
+            "allowedValues": [
+              "2008-R2-SP1",
+              "2012-Datacenter",
+              "2012-R2-Datacenter",
+              "2016-Nano-Server",
+              "2016-Datacenter-with-Containers",
+              "2016-Datacenter",
+              "2019-Datacenter",
+              "2019-Datacenter-Core",
+              "2019-Datacenter-Core-smalldisk",
+              "2019-Datacenter-Core-with-Containers",
+              "2019-Datacenter-Core-with-Containers-smalldisk",
+              "2019-Datacenter-smalldisk",
+              "2019-Datacenter-with-Containers",
+              "2019-Datacenter-with-Containers-smalldisk",
+              "2022-datacenter-azure-edition",
+              "16.04.0-LTS"
+            ],
+            "metadata": {
+              "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            }
+        }
     },
     "networkInterfaceName": {
       "value": "them0001471"
