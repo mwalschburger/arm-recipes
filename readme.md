@@ -8,4 +8,9 @@ MW VM
 
 
 MW multi-VM to existing Subnet
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmwalschburger%2Farm-recipes%2Fmain%2Fvm-mutiple-2-existing-vnet.json)
+
+test-multiVM.json
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmwalschburger%2Farm-recipes%2Fmain%2Ftest-multiVM.json)
